@@ -1,0 +1,17 @@
+{{ define "upload" }}
+
+{{ template "header" }}
+
+  <main class="px-3">
+    <h1>Upload file</h1>
+    <form enctype="multipart/form-data" action="/upload_file" method="post">
+      <input type="text" name="Brand" id="brand" placeholder="Write brand name" class="form-control"><br>
+      <input type="text" name="Model" id="model" placeholder="Write model" class="form-control"><br>
+      <textarea type="full_text" name="Description" id="descriptoin" placeholder="Write description"></textarea><br>
+      <input type="file" name="uploaded_file">
+    </form>
+  </main>
+
+{{ template "footer" }}
+
+{{ end }}
