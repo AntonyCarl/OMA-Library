@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/AntonyCarl/OMA-Library/repository"
 )
 
 const (
@@ -12,12 +14,13 @@ const (
 )
 
 func RunWeb() {
-	http.HandleFunc("/", showMainPage)
-	http.HandleFunc("/upload", showUploadForm)
+	http.HandleFunc("/", mainPageHandler)
+	http.HandleFunc("/upload", uploadFormHandler)
+	http.HandleFunc("/upload_file", uploadFileHandler)
 
 }
 
-func showMainPage(w http.ResponseWriter, r *http.Request) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/index.html", footer, header)
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +31,7 @@ func showMainPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func showUploadForm(w http.ResponseWriter, r *http.Request) {
+func uploadFormHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/upload_form.html", footer, header)
 	if err != nil {
 		log.Fatal(err)
@@ -37,4 +40,14 @@ func showUploadForm(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	file, handler, err := r.FormFile("uploaded_file")
+	if err != nil {
+		log.Fatal(err)
+	}
+	repository.SaveFile(file, handler.Filename)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

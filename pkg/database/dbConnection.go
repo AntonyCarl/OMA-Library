@@ -16,7 +16,7 @@ type ConnectionParametrs struct {
 	SSLMode  string
 }
 
-func dbConnection(params ConnectionParametrs) (*sql.DB, error) {
+func DbConnection(params ConnectionParametrs) (*sql.DB, error) {
 	db, err := sql.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=%s password=%s",
 			params.Host, params.Port, params.User, params.DBName, params.SSLMode, params.Password))
