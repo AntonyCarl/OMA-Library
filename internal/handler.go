@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
-	"github.com/AntonyCarl/OMA-Library/pkg/database"
+	"github.com/AntonyCarl/OMA-Library/pkg/psql"
 	"github.com/AntonyCarl/OMA-Library/repository"
 )
 
@@ -52,7 +52,7 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	path := repository.SaveFile(file, handler.Filename)
 	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
 
-	err = database.Create(omafile)
+	err = psql.Create(omafile)
 	if err != nil {
 		log.Fatal(err)
 	}
