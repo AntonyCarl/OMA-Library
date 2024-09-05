@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/AntonyCarl/OMA-Library/internal/domain"
+	"github.com/AntonyCarl/OMA-Library/pkg/database"
 	"github.com/AntonyCarl/OMA-Library/repository"
 )
 
@@ -47,7 +49,13 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	repository.SaveFile(file, handler.Filename)
+	path := repository.SaveFile(file, handler.Filename)
+	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
+
+	err = database.Create(omafile)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
