@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
-	psql "github.com/AntonyCarl/OMA-Library/pkg/database"
+	psql "github.com/AntonyCarl/OMA-Library/pkg/psql"
 	"github.com/AntonyCarl/OMA-Library/repository"
 )
 
