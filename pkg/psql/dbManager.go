@@ -16,7 +16,7 @@ func Create(o domain.Omafile) error {
 	return err
 }
 
-func GetByBrand(brand string) ([]domain.Omafile, error) {
+func GetByBrand(brand string) []domain.Omafile {
 	rows, err := DbConn.Query("SELECT * FROM files WHERE brand = $1", brand)
 	if err != nil {
 		log.Fatal(err)
@@ -32,5 +32,43 @@ func GetByBrand(brand string) ([]domain.Omafile, error) {
 		}
 		forms = append(forms, form)
 	}
-	return forms, err
+	return forms
+}
+
+func GetByBrandAndModel(brand string, model string) []domain.Omafile {
+	rows, err := DbConn.Query("SELECT * FROM files WHERE brand = $1, model = $2", brand, model)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	forms := make([]domain.Omafile, 0)
+	for rows.Next() {
+		form := domain.Omafile{}
+		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
+		if err != nil {
+			log.Fatal(err)
+		}
+		forms = append(forms, form)
+	}
+	return forms
+}
+
+func GetByModel(model string) []domain.Omafile {
+	rows, err := DbConn.Query("SELECT * FROM files WHERE model = $1", model)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	forms := make([]domain.Omafile, 0)
+	for rows.Next() {
+		form := domain.Omafile{}
+		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
+		if err != nil {
+			log.Fatal(err)
+		}
+		forms = append(forms, form)
+	}
+	return forms
 }

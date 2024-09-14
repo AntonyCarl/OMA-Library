@@ -19,6 +19,7 @@ func RunWeb() {
 	http.HandleFunc("/", mainPageHandler)
 	http.HandleFunc("/upload", uploadFormHandler)
 	http.HandleFunc("/upload_file", uploadFileHandler)
+	http.HandleFunc("/search", searchHandler)
 
 }
 
@@ -59,3 +60,34 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func searchHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("templates/index.html", footer, header)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	brand := r.URL.Query().Get("brand")
+	model := r.URL.Query().Get("model")
+	var files []domain.Omafile = nil
+
+	if brand != "" && model != "" {
+		files = psql.GetByBrandAndModel(brand, model)
+	} else if brand != "" {
+		files = psql.GetByBrand(brand)
+	} else if model != "" {
+		files = psql.GetByModel(model)
+	}
+
+	t.ExecuteTemplate(w, "index", files)
+}
+
+// func sendFilesHandler(w http.ResponseWriter, r *http.Request) {
+// 	t, err := template.ParseFiles("templates/index.html", footer, header)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	files, _ := psql.GetByBrand("Revlon")
+
+// }
