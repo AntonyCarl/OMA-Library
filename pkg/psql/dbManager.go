@@ -16,6 +16,23 @@ func Create(o domain.Omafile) error {
 	return err
 }
 
+func GetById(id string) domain.Omafile {
+	rows, err := DbConn.Query("SELECT * FROM files WHERE id = $1", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	form := domain.Omafile{}
+	for rows.Next() {
+		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return form
+}
+
 func GetByBrand(brand string) []domain.Omafile {
 	rows, err := DbConn.Query("SELECT * FROM files WHERE brand = $1", brand)
 	if err != nil {
