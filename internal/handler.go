@@ -4,22 +4,29 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
 	psql "github.com/AntonyCarl/OMA-Library/pkg/psql"
 	"github.com/AntonyCarl/OMA-Library/repository"
+	"github.com/gorilla/mux"
 )
 
 const (
 	footer = "templates/header_footer/footer.html"
 	header = "templates/header_footer/header.html"
+	forms  = "templates/forms.html"
 )
 
 func RunWeb() {
-	http.HandleFunc("/", mainPageHandler)
-	http.HandleFunc("/upload", uploadFormHandler)
-	http.HandleFunc("/upload_file", uploadFileHandler)
-	http.HandleFunc("/search", searchHandler)
+	router := mux.NewRouter()
+	router.HandleFunc("/", mainPageHandler).Methods("GET")
+	router.HandleFunc("/upload", uploadFormHandler).Methods("GET")
+	router.HandleFunc("/upload_file", uploadFileHandler).Methods("POST")
+	router.HandleFunc("/search", searchHandler).Methods("GET")
+	router.HandleFunc("/oma/{id:[0-9]+}", dowloadHandler)
+
+	http.Handle("/", router)
 
 }
 
@@ -62,7 +69,7 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/index.html", footer, header)
+	t, err := template.ParseFiles("templates/index.html", footer, header, forms)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,15 +86,15 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		files = psql.GetByModel(model)
 	}
 
-	t.ExecuteTemplate(w, "index", files)
+	t.ExecuteTemplate(w, "forms", files)
 }
 
-// func sendFilesHandler(w http.ResponseWriter, r *http.Request) {
-// 	t, err := template.ParseFiles("templates/index.html", footer, header)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+func dowloadHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	oma := psql.GetById(vars["id"])
 
-// 	files, _ := psql.GetByBrand("Revlon")
+	w.Header().Set("Content-Disposition", "attachment; filename="+filepath.Base(oma.Directory))
+	w.Header().Set("Content-Type", "application/octet-stream")
 
-// }
+	http.ServeFile(w, r, oma.Directory)
+}
