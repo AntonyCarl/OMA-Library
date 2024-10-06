@@ -3,7 +3,8 @@ package psql
 import (
 	"database/sql"
 	"fmt"
-	"log"
+
+	"github.com/AntonyCarl/OMA-Library/pkg/logger"
 )
 
 var DbConn *sql.DB
@@ -23,6 +24,6 @@ func DbConnection() {
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 			host, port, user, password, dbname, sslmode))
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Fatal(err)
 	}
 }

@@ -2,12 +2,12 @@ package internal
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
+	"github.com/AntonyCarl/OMA-Library/pkg/logger"
 	psql "github.com/AntonyCarl/OMA-Library/pkg/psql"
 	"github.com/AntonyCarl/OMA-Library/repository"
 	"github.com/gorilla/mux"
@@ -34,33 +34,34 @@ func RunWeb() {
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/index.html", footer, header)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	err = t.ExecuteTemplate(w, "index", nil)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 }
 
 func uploadFormHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/upload_form.html", footer, header)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	err = t.ExecuteTemplate(w, "upload", nil)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 }
 
 func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("uploaded_file")
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 
 	path := repository.SaveFile(file, handler.Filename)
 	if !strings.HasSuffix(handler.Filename, ".oma") {
+		logger.Logger.Info("Not oma")
 		http.Error(w, "Invalid file format. Only .oma files are allowed", http.StatusUnsupportedMediaType)
 		return
 	}
@@ -68,7 +69,7 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
 	err = psql.Create(omafile)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -77,7 +78,7 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/index.html", footer, header, forms)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 
 	brand := r.URL.Query().Get("brand")
