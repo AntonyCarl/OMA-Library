@@ -1,9 +1,8 @@
 package psql
 
 import (
-	"log"
-
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
+	"github.com/AntonyCarl/OMA-Library/pkg/logger"
 )
 
 func Create(o domain.Omafile) error {
@@ -11,7 +10,7 @@ func Create(o domain.Omafile) error {
 		o.Brand, o.Model, o.Info, o.Directory)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	return err
 }
@@ -19,7 +18,7 @@ func Create(o domain.Omafile) error {
 func GetById(id string) domain.Omafile {
 	rows, err := DbConn.Query("SELECT * FROM files WHERE id = $1", id)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
@@ -27,7 +26,7 @@ func GetById(id string) domain.Omafile {
 	for rows.Next() {
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Error(err)
 		}
 	}
 	return form
@@ -36,7 +35,7 @@ func GetById(id string) domain.Omafile {
 func GetByBrand(brand string) []domain.Omafile {
 	rows, err := DbConn.Query("SELECT * FROM files WHERE brand = $1", brand)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
@@ -45,7 +44,7 @@ func GetByBrand(brand string) []domain.Omafile {
 		form := domain.Omafile{}
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Error(err)
 		}
 		forms = append(forms, form)
 	}
@@ -55,7 +54,7 @@ func GetByBrand(brand string) []domain.Omafile {
 func GetByBrandAndModel(brand string, model string) []domain.Omafile {
 	rows, err := DbConn.Query("SELECT * FROM files WHERE brand = $1, model = $2", brand, model)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
@@ -64,7 +63,7 @@ func GetByBrandAndModel(brand string, model string) []domain.Omafile {
 		form := domain.Omafile{}
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Error(err)
 		}
 		forms = append(forms, form)
 	}
@@ -74,7 +73,7 @@ func GetByBrandAndModel(brand string, model string) []domain.Omafile {
 func GetByModel(model string) []domain.Omafile {
 	rows, err := DbConn.Query("SELECT * FROM files WHERE model = $1", model)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
@@ -83,7 +82,7 @@ func GetByModel(model string) []domain.Omafile {
 		form := domain.Omafile{}
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Error(err)
 		}
 		forms = append(forms, form)
 	}
