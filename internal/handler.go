@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
 	psql "github.com/AntonyCarl/OMA-Library/pkg/psql"
@@ -57,9 +58,14 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	path := repository.SaveFile(file, handler.Filename)
-	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
 
+	path := repository.SaveFile(file, handler.Filename)
+	if !strings.HasSuffix(handler.Filename, ".oma") {
+		http.Error(w, "Invalid file format. Only .oma files are allowed", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
 	err = psql.Create(omafile)
 	if err != nil {
 		log.Fatal(err)
