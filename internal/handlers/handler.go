@@ -1,4 +1,4 @@
-package internal
+package handlers
 
 import (
 	"html/template"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
 	"github.com/AntonyCarl/OMA-Library/pkg/logger"
-	psql "github.com/AntonyCarl/OMA-Library/pkg/psql"
 	"github.com/AntonyCarl/OMA-Library/repository"
 	"github.com/gorilla/mux"
 )
@@ -19,13 +18,13 @@ const (
 	forms  = "templates/forms.html"
 )
 
-func RunWeb() {
+func RunWeb(storage *Storage) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainPageHandler).Methods("GET")
 	router.HandleFunc("/upload", uploadFormHandler).Methods("GET")
-	router.HandleFunc("/upload_file", uploadFileHandler).Methods("POST")
-	router.HandleFunc("/search", searchHandler).Methods("GET")
-	router.HandleFunc("/oma/{id:[0-9]+}", dowloadHandler)
+	router.HandleFunc("/upload_file", storage.uploadFileHandler).Methods("POST")
+	router.HandleFunc("/search", storage.searchHandler).Methods("GET")
+	router.HandleFunc("/oma/{id:[0-9]+}", storage.dowloadHandler)
 
 	http.Handle("/", router)
 
@@ -53,7 +52,9 @@ func uploadFormHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
+// hendlers working with db:
+
+func (storage *Storage) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("uploaded_file")
 	if err != nil {
 		logger.Logger.Error(err)
@@ -67,7 +68,7 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
-	err = psql.Create(omafile)
+	err = storage.Create(omafile)
 	if err != nil {
 		logger.Logger.Error(err)
 	}
@@ -75,7 +76,7 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func searchHandler(w http.ResponseWriter, r *http.Request) {
+func (storage *Storage) searchHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/index.html", footer, header, forms)
 	if err != nil {
 		logger.Logger.Error(err)
@@ -86,19 +87,19 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	var files []domain.Omafile = nil
 
 	if brand != "" && model != "" {
-		files = psql.GetByBrandAndModel(brand, model)
+		files = storage.GetByBrandAndModel(brand, model)
 	} else if brand != "" {
-		files = psql.GetByBrand(brand)
+		files = storage.GetByBrand(brand)
 	} else if model != "" {
-		files = psql.GetByModel(model)
+		files = storage.GetByModel(model)
 	}
 
 	t.ExecuteTemplate(w, "forms", files)
 }
 
-func dowloadHandler(w http.ResponseWriter, r *http.Request) {
+func (storage *Storage) dowloadHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	oma := psql.GetById(vars["id"])
+	oma := storage.GetById(vars["id"])
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+filepath.Base(oma.Directory))
 	w.Header().Set("Content-Type", "application/octet-stream")
