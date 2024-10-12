@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
+	"github.com/AntonyCarl/OMA-Library/internal/storage"
 	"github.com/AntonyCarl/OMA-Library/pkg/logger"
 	"github.com/AntonyCarl/OMA-Library/repository"
 	"github.com/gorilla/mux"
@@ -18,13 +19,13 @@ const (
 	forms  = "templates/forms.html"
 )
 
-func RunWeb(storage *Storage) {
+func RunWeb(storage *storage.Storage) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainPageHandler).Methods("GET")
 	router.HandleFunc("/upload", uploadFormHandler).Methods("GET")
-	router.HandleFunc("/upload_file", storage.uploadFileHandler).Methods("POST")
-	router.HandleFunc("/search", storage.searchHandler).Methods("GET")
-	router.HandleFunc("/oma/{id:[0-9]+}", storage.dowloadHandler)
+	router.HandleFunc("/upload_file", uploadFileHandler(storage)).Methods("POST")
+	router.HandleFunc("/search", searchHandler(storage)).Methods("GET")
+	router.HandleFunc("/oma/{id:[0-9]+}", dowloadHandler(storage))
 
 	http.Handle("/", router)
 
@@ -54,55 +55,61 @@ func uploadFormHandler(w http.ResponseWriter, r *http.Request) {
 
 // hendlers working with db:
 
-func (storage *Storage) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	file, handler, err := r.FormFile("uploaded_file")
-	if err != nil {
-		logger.Logger.Error(err)
-	}
+func uploadFileHandler(storage *storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		file, handler, err := r.FormFile("uploaded_file")
+		if err != nil {
+			logger.Logger.Error(err)
+		}
 
-	path := repository.SaveFile(file, handler.Filename)
-	if !strings.HasSuffix(handler.Filename, ".oma") {
-		logger.Logger.Info("Not oma")
-		http.Error(w, "Invalid file format. Only .oma files are allowed", http.StatusUnsupportedMediaType)
-		return
-	}
+		path := repository.SaveFile(file, handler.Filename)
+		if !strings.HasSuffix(handler.Filename, ".oma") {
+			logger.Logger.Info("Not oma")
+			http.Error(w, "Invalid file format. Only .oma files are allowed", http.StatusUnsupportedMediaType)
+			return
+		}
 
-	omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
-	err = storage.Create(omafile)
-	if err != nil {
-		logger.Logger.Error(err)
-	}
+		omafile := domain.NewOmafile(r.FormValue("Brand"), r.FormValue("Model"), r.FormValue("Description"), path)
+		err = storage.Create(omafile)
+		if err != nil {
+			logger.Logger.Error(err)
+		}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
-func (storage *Storage) searchHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/index.html", footer, header, forms)
-	if err != nil {
-		logger.Logger.Error(err)
+func searchHandler(storage *storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		t, err := template.ParseFiles("templates/index.html", footer, header, forms)
+		if err != nil {
+			logger.Logger.Error(err)
+		}
+
+		brand := r.URL.Query().Get("brand")
+		model := r.URL.Query().Get("model")
+		var files []domain.Omafile = nil
+
+		if brand != "" && model != "" {
+			files = storage.GetByBrandAndModel(brand, model)
+		} else if brand != "" {
+			files = storage.GetByBrand(brand)
+		} else if model != "" {
+			files = storage.GetByModel(model)
+		}
+
+		t.ExecuteTemplate(w, "forms", files)
 	}
-
-	brand := r.URL.Query().Get("brand")
-	model := r.URL.Query().Get("model")
-	var files []domain.Omafile = nil
-
-	if brand != "" && model != "" {
-		files = storage.GetByBrandAndModel(brand, model)
-	} else if brand != "" {
-		files = storage.GetByBrand(brand)
-	} else if model != "" {
-		files = storage.GetByModel(model)
-	}
-
-	t.ExecuteTemplate(w, "forms", files)
 }
 
-func (storage *Storage) dowloadHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	oma := storage.GetById(vars["id"])
+func dowloadHandler(storage *storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		oma := storage.GetById(vars["id"])
 
-	w.Header().Set("Content-Disposition", "attachment; filename="+filepath.Base(oma.Directory))
-	w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Disposition", "attachment; filename="+filepath.Base(oma.Directory))
+		w.Header().Set("Content-Type", "application/octet-stream")
 
-	http.ServeFile(w, r, oma.Directory)
+		http.ServeFile(w, r, oma.Directory)
+	}
 }
