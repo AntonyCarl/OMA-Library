@@ -19,7 +19,7 @@ type PostgresConfig struct {
 	SSLMode  string
 }
 
-func SetConfig() {
+func SetConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
 		logger.Logger.Fatal(err)
@@ -30,4 +30,6 @@ func SetConfig() {
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
+
+	return &cfg
 }

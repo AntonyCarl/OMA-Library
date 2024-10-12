@@ -2,7 +2,9 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 
+	"github.com/AntonyCarl/OMA-Library/internal/config"
 	"github.com/AntonyCarl/OMA-Library/internal/domain"
 	"github.com/AntonyCarl/OMA-Library/pkg/logger"
 )
@@ -11,18 +13,23 @@ type Storage struct {
 	db *sql.DB
 }
 
-func NewStorage() (*Storage, error) {
+func NewStorage(cfg *config.Config) (*Storage, error) {
 	const op = "storage.NewStorage"
 
-	// db, err := sql.Open("postgres",
-	// 	fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-	// 		host, port, user, password, dbname, sslmode)) // get from config
-	// if err != nil {
-	// 	logger.Logger.Fatal(err)
-	// 	return nil, fmt.Errorf(op)
-	// }
+	db, err := sql.Open("postgres",
+		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+			cfg.DB.Host,
+			cfg.DB.Port,
+			cfg.DB.User,
+			cfg.DB.Password,
+			cfg.DB.DBName,
+			cfg.DB.SSLMode))
+	if err != nil {
+		logger.Logger.Fatal(err)
+		return nil, fmt.Errorf(op)
+	}
 
-	return &Storage{db: nil}, nil
+	return &Storage{db: db}, nil
 }
 
 func (storage *Storage) Create(o domain.Omafile) error {
@@ -72,7 +79,7 @@ func (storage *Storage) GetByBrand(brand string) []domain.Omafile {
 }
 
 func (storage *Storage) GetByBrandAndModel(brand string, model string) []domain.Omafile {
-	rows, err := storage.db.Query("SELECT * FROM files WHERE brand = $1, model = $2", brand, model)
+	rows, err := storage.db.Query("SELECT * FROM files WHERE brand = $1 AND model = $2", brand, model)
 	if err != nil {
 		logger.Logger.Error(err)
 	}
