@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/AntonyCarl/OMA-Library/internal/config"
 	"github.com/AntonyCarl/OMA-Library/internal/handlers"
 	"github.com/AntonyCarl/OMA-Library/internal/storage"
@@ -15,5 +13,4 @@ func main() {
 	logger.Init()
 	storage, _ := storage.NewStorage(cfg)
 	handlers.RunWeb(storage)
-	http.ListenAndServe(":8080", nil)
 }
