@@ -33,3 +33,5 @@ func SetConfig() *Config {
 
 	return &cfg
 }
+
+// config for admin DB
