@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/AntonyCarl/OMA-Library/internal/config"
 	"github.com/AntonyCarl/OMA-Library/internal/handlers"
-	"github.com/AntonyCarl/OMA-Library/internal/storage"
 	"github.com/AntonyCarl/OMA-Library/pkg/logger"
+	"github.com/AntonyCarl/OMA-Library/pkg/storage"
 	_ "github.com/lib/pq"
 )
 

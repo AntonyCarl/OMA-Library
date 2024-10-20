@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AntonyCarl/OMA-Library/internal/config"
-	"github.com/AntonyCarl/OMA-Library/internal/domain"
+	"github.com/AntonyCarl/OMA-Library/internal/models"
 	"github.com/AntonyCarl/OMA-Library/pkg/logger"
 )
 
@@ -32,7 +32,7 @@ func NewStorage(cfg *config.Config) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-func (storage *Storage) Create(o domain.Omafile) error {
+func (storage *Storage) Create(o models.Omafile) error {
 	_, err := storage.db.Exec("INSERT INTO files (brand, model, info, directory) VALUES ($1, $2, $3, $4)",
 		o.Brand, o.Model, o.Info, o.Directory)
 
@@ -42,14 +42,14 @@ func (storage *Storage) Create(o domain.Omafile) error {
 	return err
 }
 
-func (storage *Storage) GetById(id string) domain.Omafile {
+func (storage *Storage) GetById(id string) models.Omafile {
 	rows, err := storage.db.Query("SELECT * FROM files WHERE id = $1", id)
 	if err != nil {
 		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
-	form := domain.Omafile{}
+	form := models.Omafile{}
 	for rows.Next() {
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
@@ -59,16 +59,16 @@ func (storage *Storage) GetById(id string) domain.Omafile {
 	return form
 }
 
-func (storage *Storage) GetByBrand(brand string) []domain.Omafile {
+func (storage *Storage) GetByBrand(brand string) []models.Omafile {
 	rows, err := storage.db.Query("SELECT * FROM files WHERE brand = $1", brand)
 	if err != nil {
 		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
-	forms := make([]domain.Omafile, 0)
+	forms := make([]models.Omafile, 0)
 	for rows.Next() {
-		form := domain.Omafile{}
+		form := models.Omafile{}
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
 			logger.Logger.Error(err)
@@ -78,16 +78,16 @@ func (storage *Storage) GetByBrand(brand string) []domain.Omafile {
 	return forms
 }
 
-func (storage *Storage) GetByBrandAndModel(brand string, model string) []domain.Omafile {
+func (storage *Storage) GetByBrandAndModel(brand string, model string) []models.Omafile {
 	rows, err := storage.db.Query("SELECT * FROM files WHERE brand = $1 AND model = $2", brand, model)
 	if err != nil {
 		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
-	forms := make([]domain.Omafile, 0)
+	forms := make([]models.Omafile, 0)
 	for rows.Next() {
-		form := domain.Omafile{}
+		form := models.Omafile{}
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
 			logger.Logger.Error(err)
@@ -97,16 +97,16 @@ func (storage *Storage) GetByBrandAndModel(brand string, model string) []domain.
 	return forms
 }
 
-func (storage *Storage) GetByModel(model string) []domain.Omafile {
+func (storage *Storage) GetByModel(model string) []models.Omafile {
 	rows, err := storage.db.Query("SELECT * FROM files WHERE model = $1", model)
 	if err != nil {
 		logger.Logger.Error(err)
 	}
 	defer rows.Close()
 
-	forms := make([]domain.Omafile, 0)
+	forms := make([]models.Omafile, 0)
 	for rows.Next() {
-		form := domain.Omafile{}
+		form := models.Omafile{}
 		err := rows.Scan(&form.Id, &form.Brand, &form.Model, &form.Info, &form.Directory)
 		if err != nil {
 			logger.Logger.Error(err)

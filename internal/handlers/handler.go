@@ -3,26 +3,30 @@ package handlers
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 
-	"github.com/AntonyCarl/OMA-Library/internal/domain"
-	"github.com/AntonyCarl/OMA-Library/internal/storage"
+	"github.com/AntonyCarl/OMA-Library/internal/models"
 	"github.com/AntonyCarl/OMA-Library/internal/utils"
 	"github.com/AntonyCarl/OMA-Library/pkg/logger"
-	"github.com/AntonyCarl/OMA-Library/repository"
+	"github.com/AntonyCarl/OMA-Library/pkg/repository"
+	"github.com/AntonyCarl/OMA-Library/pkg/storage"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 func RunWeb(storage *storage.Storage) {
 	e := echo.New()
 	e.Renderer = utils.NewTemplate("templates/*.html")
-
+	e.Validator = &utils.CustomValidator{Validator: validator.New()}
 	e.GET("/", mainPageHandler)
 	e.GET("/upload", uploadFormHandler)
 	e.POST("/upload_file", uploadFileHandler(storage))
 	e.GET("/search", searchHandler(storage))
 	e.GET("/oma/:id", dowloadHandler(storage))
 
-	e.Start(":8080")
+	e.POST("/register", RegisterAdmin(storage))
+
+	e.Start(":8080") // add to config
 
 }
 
@@ -49,21 +53,21 @@ func uploadFileHandler(storage *storage.Storage) echo.HandlerFunc {
 		fileHeader, err := c.FormFile("uploaded_file")
 		if err != nil {
 			logger.Logger.Error(err)
-			c.String(http.StatusBadRequest, "Не вдалося отримати файл: "+err.Error())
+			c.String(http.StatusBadRequest, "Cant get file: "+err.Error())
 		}
 		file, err := fileHeader.Open()
 		if err != nil {
 			logger.Logger.Error(err)
-			c.String(http.StatusBadRequest, "Не вдалося отримати файл: "+err.Error())
+			c.String(http.StatusBadRequest, "Cant get file: "+err.Error())
 		}
 
 		path := repository.SaveFile(file, fileHeader.Filename)
-		// if !strings.HasSuffix(fileHeader.Filename, ".oma") {
-		// 	logger.Logger.Info("Not oma")
-		// 	c.String(http.StatusBadRequest, "Invalid file format. Only .oma files are allowed"+err.Error())
-		// }
+		if !strings.HasSuffix(fileHeader.Filename, ".oma") {
+			logger.Logger.Info("Not oma")
+			c.String(http.StatusBadRequest, "Invalid file format. Only .oma files are allowed"+err.Error())
+		}
 
-		omafile := domain.NewOmafile(c.FormValue("Brand"), c.FormValue("Model"), c.FormValue("Description"), path)
+		omafile := models.NewOmafile(c.FormValue("Brand"), c.FormValue("Model"), c.FormValue("Description"), path)
 		err = storage.Create(omafile)
 		if err != nil {
 			logger.Logger.Error(err)
@@ -78,7 +82,7 @@ func searchHandler(storage *storage.Storage) echo.HandlerFunc {
 
 		brand := c.QueryParam("brand")
 		model := c.QueryParam("model")
-		var files []domain.Omafile = nil
+		var files []models.Omafile = nil
 
 		if brand != "" && model != "" {
 			files = storage.GetByBrandAndModel(brand, model)
