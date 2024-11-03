@@ -11,6 +11,7 @@ import (
 	"github.com/AntonyCarl/OMA-Library/pkg/repository"
 	"github.com/AntonyCarl/OMA-Library/pkg/storage"
 	"github.com/go-playground/validator/v10"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -18,13 +19,21 @@ func RunWeb(storage *storage.Storage) {
 	e := echo.New()
 	e.Renderer = utils.NewTemplate("templates/*.html")
 	e.Validator = &utils.CustomValidator{Validator: validator.New()}
+	resGroup := e.Group("/admin")
+	resGroup.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey:  jwtSecret,
+		TokenLookup: "cookie:jwt",
+	}))
+
 	e.GET("/", mainPageHandler)
-	e.GET("/upload", uploadFormHandler)
-	e.POST("/upload_file", uploadFileHandler(storage))
+	//e.GET("/upload", uploadFormHandler)
+	//e.POST("/upload_file", uploadFileHandler(storage))
 	e.GET("/search", searchHandler(storage))
 	e.GET("/oma/:id", dowloadHandler(storage))
-
 	e.POST("/register", RegisterAdmin(storage))
+	e.GET("/login", AdminLogin(storage))
+	resGroup.GET("/upload", uploadFormHandler)
+	resGroup.POST("/upload_file", uploadFileHandler(storage))
 
 	e.Start(":8080") // add to config
 
