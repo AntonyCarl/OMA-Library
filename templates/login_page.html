@@ -16,29 +16,35 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="index.html">Search</a>
+                  <a class="nav-link" aria-current="page" href="index.html">Search</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="login_page.html">Login</a>
+                  <a class="nav-link active" href="login_page.html">Login</a>
                 </li>
               </ul>
             </div>
           </div>
         </nav>
       </header>
-  <main class="px-3">
-    <h1>Search Files</h1>
-    <form action="/search" method="GET" class="p-4 border rounded shadow-sm bg-light w-50 mx-auto">
-      <div class="mb-3">
-        <label for="brand" class="form-label">Brand:</label>
-        <input type="text" id="brand" name="brand" class="form-control" placeholder="Enter brand">
+  <main class="px-3 ">
+    <h1>Login</h1>
+    <form>
+      <div class="mb-3 mx-auto w-50">
+        <label for="exampleInputEmail1" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
       </div>
-      <div class="mb-3">
-        <label for="model" class="form-label">Model:</label>
-        <input type="text" id="model" name="model" class="form-control" placeholder="Enter model">
+      <div class="mb-3 mx-auto w-50">
+        <label for="exampleInputPassword1" class="form-label">Password</label>
+        <input type="password" class="form-control" id="exampleInputPassword1">
       </div>
-      <button type="submit" class="btn btn-primary w-50">Search</button>
+      <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+
+
+    <!-- {{ range. }}
+      <h2>{{ .Brand }}</h2>  
+
+    {{ end }} -->
   </main>
 
   
