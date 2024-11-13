@@ -1,3 +1,4 @@
+{{ define "forms" }}
 <!DOCTYPE html>
 <html lang="en" class="h-50" data-bs-theme="light"><head><script src="/docs/5.3/assets/js/color-modes.js"></script>
 <head>
@@ -18,8 +19,8 @@
       </header>
   <main class="px-3">
     <h1>Search results</h1>
-    <button onclick="window.history.back()" class="btn btn-secondary mt-3">Back to search</button>
-    <div class="d-flex flex-column gap-3 mb-3">
+    <button onclick="window.history.back()" class="btn btn-secondary mt-3 gap-3 mb-3 w-50 mx-auto">Back to search</button>
+    <div class="d-flex flex-column gap-3 mb-3 w-50 mx-auto">
       {{range .}}
       <div class="card">
         <div class="card-body">
@@ -32,10 +33,13 @@
     </div>
   </main> 
   </div> 
+<script src="/js/isAdmin.js"></script>
+
   </body>
 <footer class="mt-auto text-white-50">
   </footer>
 
   </html>
+  {{ end }}
 
   

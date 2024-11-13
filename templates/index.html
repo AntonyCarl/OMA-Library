@@ -1,3 +1,4 @@
+{{ define "index" }}
 <!DOCTYPE html>
 <html lang="en" class="h-50" data-bs-theme="light"><head><script src="/docs/5.3/assets/js/color-modes.js"></script>
 <head>
@@ -16,7 +17,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="index.html">Search</a>
+                  <a class="nav-link active" aria-current="page" href="/">Search</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="login_page.html">Login</a>
@@ -43,11 +44,12 @@
 
   
   </div>
-  
+<script src="/js/isAdmin.js"></script>
+
   </body>
 <footer class="mt-auto text-white-50">
   </footer>
 
   </html>
 
-  
+  {{ end }}
