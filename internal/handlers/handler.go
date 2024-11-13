@@ -18,6 +18,7 @@ import (
 func RunWeb(storage *storage.Storage) {
 	e := echo.New()
 	e.Renderer = utils.NewTemplate("templates/*.html")
+	e.Static("/", "templates")
 	e.Validator = &utils.CustomValidator{Validator: validator.New()}
 	resGroup := e.Group("/admin")
 	resGroup.Use(echojwt.WithConfig(echojwt.Config{
@@ -26,12 +27,10 @@ func RunWeb(storage *storage.Storage) {
 	}))
 
 	e.GET("/", mainPageHandler)
-	//e.GET("/upload", uploadFormHandler)
-	//e.POST("/upload_file", uploadFileHandler(storage))
 	e.GET("/search", searchHandler(storage))
 	e.GET("/oma/:id", dowloadHandler(storage))
 	e.POST("/register", RegisterAdmin(storage))
-	e.GET("/login", AdminLogin(storage))
+	e.POST("/login", AdminLogin(storage))
 	resGroup.GET("/upload", uploadFormHandler)
 	resGroup.POST("/upload_file", uploadFileHandler(storage))
 
@@ -62,12 +61,12 @@ func uploadFileHandler(storage *storage.Storage) echo.HandlerFunc {
 		fileHeader, err := c.FormFile("uploaded_file")
 		if err != nil {
 			logger.Logger.Error(err)
-			c.String(http.StatusBadRequest, "Cant get file: "+err.Error())
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "File is required"})
 		}
 		file, err := fileHeader.Open()
 		if err != nil {
 			logger.Logger.Error(err)
-			c.String(http.StatusBadRequest, "Cant get file: "+err.Error())
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "File is required"})
 		}
 
 		path := repository.SaveFile(file, fileHeader.Filename)
@@ -75,14 +74,17 @@ func uploadFileHandler(storage *storage.Storage) echo.HandlerFunc {
 			logger.Logger.Info("Not oma")
 			c.String(http.StatusBadRequest, "Invalid file format. Only .oma files are allowed"+err.Error())
 		}
+		omaFile := new(models.Omafile)
+		omaFile.Brand = c.FormValue("Brand")
+		omaFile.Model = c.FormValue("Model")
+		omaFile.Info = c.FormValue("Description")
+		omaFile.Directory = path
 
-		omafile := models.NewOmafile(c.FormValue("Brand"), c.FormValue("Model"), c.FormValue("Description"), path)
-		err = storage.Create(omafile)
+		err = storage.Create(*omaFile)
 		if err != nil {
 			logger.Logger.Error(err)
 		}
-		c.Redirect(200, "/")
-		return nil
+		return c.JSON(http.StatusOK, map[string]string{"message": "File uploaded successfully"})
 	}
 }
 

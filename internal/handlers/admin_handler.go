@@ -37,6 +37,7 @@ func RegisterAdmin(storage *storage.Storage) echo.HandlerFunc {
 	}
 }
 
+
 func AdminLogin(storage *storage.Storage) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var signInReq models.SignInRequset
@@ -66,9 +67,7 @@ func AdminLogin(storage *storage.Storage) echo.HandlerFunc {
 			Value:    tokenString,
 			Path:     "/",
 			HttpOnly: true,
-			Secure:   true,
-			SameSite: http.SameSiteStrictMode,
-			Expires:  time.Now().Add(time.Hour * 2),
+			MaxAge: 86400,
 		})
 
 		return c.JSON(http.StatusOK, echo.Map{"token": tokenString})
