@@ -1,11 +1,11 @@
 package models
 
 type Omafile struct {
-	Id        int
-	Brand     string
-	Model     string
-	Info      string
-	Directory string
+	Id        int    `json:"id"`
+	Brand     string `json:"Brand"`
+	Model     string `json:"Model"`
+	Info      string `json:"Desctiprion"`
+	Directory string `json:"Directory"`
 }
 
 func NewOmafile(parametr ...string) Omafile {
