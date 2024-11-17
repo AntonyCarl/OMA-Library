@@ -1,4 +1,4 @@
-package handler_test
+package handlers_test
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ func TestMainPageHandler(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	if assert.NoError(t, mainPageHandler(c)) {
+	if assert.NoError(t, MainPageHandler(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}
 }
