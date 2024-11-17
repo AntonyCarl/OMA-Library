@@ -26,7 +26,7 @@ func RunWeb(storage *storage.Storage) {
 		TokenLookup: "cookie:jwt",
 	}))
 
-	e.GET("/", mainPageHandler)
+	e.GET("/", MainPageHandler)
 	e.GET("/search", searchHandler(storage))
 	e.GET("/oma/:id", dowloadHandler(storage))
 	e.POST("/register", RegisterAdmin(storage))
@@ -38,7 +38,7 @@ func RunWeb(storage *storage.Storage) {
 
 }
 
-func mainPageHandler(c echo.Context) error {
+func MainPageHandler(c echo.Context) error {
 	if err := c.Render(http.StatusOK, "index", nil); err != nil {
 		logger.Logger.Error(err)
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
